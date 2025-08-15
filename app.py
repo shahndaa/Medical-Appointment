@@ -35,7 +35,6 @@ from src.features import DAY_ORDER, MODEL_FEATURES, clean_and_engineer, load_raw
 # --------------------------------------------------------------------------
 st.set_page_config(
     page_title="Medical Appointment No-Show Intelligence",
-    page_icon="🩺",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -55,35 +54,74 @@ CUSTOM_CSS = f"""
 
     div[data-testid="stMetric"] {{
         background-color: {BG_CARD};
-        border: 1px solid #ECECF4;
-        border-radius: 14px;
-        padding: 16px 18px 10px 18px;
-        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+        border: 1px solid #E7E8F2;
+        border-radius: 12px;
+        padding: 18px 20px 12px 20px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
     }}
-    div[data-testid="stMetricLabel"] {{ color: {MUTED}; font-weight: 600; }}
+    div[data-testid="stMetricLabel"] {{
+        color: {MUTED};
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }}
+    div[data-testid="stMetricValue"] {{ font-weight: 700; }}
 
-    h1, h2, h3 {{ font-family: 'Inter', 'Segoe UI', sans-serif; }}
+    h1, h2, h3, h4 {{ font-family: 'Inter', 'Segoe UI', sans-serif; letter-spacing: -0.01em; }}
 
     .hero {{
-        background: linear-gradient(120deg, {PRIMARY} 0%, #8B5FE6 100%);
-        padding: 28px 32px;
-        border-radius: 18px;
+        background: linear-gradient(115deg, #1E2A5A 0%, {PRIMARY} 100%);
+        padding: 34px 38px;
+        border-radius: 16px;
         color: white;
-        margin-bottom: 22px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255,255,255,0.08);
     }}
-    .hero h1 {{ color: white; margin-bottom: 4px; font-size: 1.9rem; }}
-    .hero p {{ color: rgba(255,255,255,0.9); margin: 0; font-size: 0.98rem; }}
+    .hero .eyebrow {{
+        color: rgba(255,255,255,0.65);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }}
+    .hero h1 {{ color: white; margin: 0 0 8px 0; font-size: 1.85rem; font-weight: 700; }}
+    .hero p {{ color: rgba(255,255,255,0.85); margin: 0; font-size: 0.96rem; max-width: 720px; line-height: 1.5; }}
 
     .insight-card {{
         background-color: {BG_CARD};
-        border-left: 4px solid {PRIMARY};
-        border-radius: 10px;
+        border: 1px solid #ECECF4;
+        border-left: 3px solid {PRIMARY};
+        border-radius: 8px;
         padding: 14px 16px;
         margin-bottom: 10px;
-        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }}
+    .insight-card .label {{
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: {PRIMARY};
+        margin-bottom: 4px;
+    }}
+
+    button[data-baseweb="tab"] {{
+        font-weight: 600;
         font-size: 0.92rem;
     }}
-    section[data-testid="stSidebar"] {{ background-color: #FBFBFE; }}
+
+    section[data-testid="stSidebar"] {{ background-color: #FBFBFE; border-right: 1px solid #ECECF4; }}
+    section[data-testid="stSidebar"] h2 {{
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: {MUTED};
+    }}
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -148,7 +186,7 @@ model, train_df, test_df, cutoff_date, model_name = get_model(df)
 # --------------------------------------------------------------------------
 # Sidebar filters
 # --------------------------------------------------------------------------
-st.sidebar.markdown("## 🩺 Filters")
+st.sidebar.markdown("## Filters")
 
 date_min, date_max = df["appointment_day"].min().date(), df["appointment_day"].max().date()
 date_range = st.sidebar.date_input(
@@ -197,9 +235,10 @@ fdf = df[mask].copy()
 st.markdown(
     """
     <div class="hero">
-        <h1>🩺 Medical Appointment No-Show Intelligence</h1>
+        <div class="eyebrow">Healthcare Analytics · Brazil, 2016</div>
+        <h1>Medical Appointment No-Show Intelligence</h1>
         <p>Exploratory analytics and a machine-learning model that predicts the probability
-        a patient will miss their scheduled appointment — Brazilian public health system, 2016.</p>
+        a patient will miss their scheduled appointment, built on 110,000+ public health system records.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -210,7 +249,7 @@ if fdf.empty:
     st.stop()
 
 tab_overview, tab_demo, tab_schedule, tab_health, tab_model = st.tabs(
-    ["📊 Overview", "👥 Demographics", "🗓️ Scheduling Patterns", "💊 Health & Behaviour", "🤖 Prediction Model"]
+    ["Overview", "Demographics", "Scheduling Patterns", "Health & Behaviour", "Prediction Model"]
 )
 
 # --------------------------------------------------------------------------
@@ -260,7 +299,7 @@ with tab_overview:
         fig.update_layout(margin=dict(t=50, l=10, r=10, b=10), showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown("#### 🔎 Key Insights")
+    st.markdown("#### Key Insights")
     insight_cols = st.columns(3)
     top_wait_bucket = (
         fdf.groupby("waiting_bucket", observed=True)["no_show_flag"].mean().idxmax()
@@ -268,23 +307,28 @@ with tab_overview:
     top_dow = fdf.groupby("appointment_dow_name", observed=True)["no_show_flag"].mean().idxmax()
     sms_effect = fdf.groupby("sms_received")["no_show_flag"].mean()
     sms_txt = (
-        f"SMS reminders correlate with a **{'lower' if sms_effect.get(1,0) < sms_effect.get(0,0) else 'higher'}** "
+        f"SMS reminders correlate with a <b>{'lower' if sms_effect.get(1,0) < sms_effect.get(0,0) else 'higher'}</b> "
         f"no-show rate ({sms_effect.get(1,0)*100:.1f}% with SMS vs {sms_effect.get(0,0)*100:.1f}% without)."
     )
     with insight_cols[0]:
         st.markdown(
-            f'<div class="insight-card">⏳ Patients who wait <b>{top_wait_bucket}</b> before their '
+            f'<div class="insight-card"><span class="label">Waiting time</span>'
+            f'Patients who wait <b>{top_wait_bucket}</b> before their '
             f'appointment have the highest no-show rate in the current selection.</div>',
             unsafe_allow_html=True,
         )
     with insight_cols[1]:
         st.markdown(
-            f'<div class="insight-card">📅 <b>{top_dow}</b> has the highest no-show rate among weekdays '
+            f'<div class="insight-card"><span class="label">Day of week</span>'
+            f'<b>{top_dow}</b> has the highest no-show rate among weekdays '
             f'in the current selection.</div>',
             unsafe_allow_html=True,
         )
     with insight_cols[2]:
-        st.markdown(f'<div class="insight-card">📩 {sms_txt}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="insight-card"><span class="label">SMS reminders</span>{sms_txt}</div>',
+            unsafe_allow_html=True,
+        )
 
 # --------------------------------------------------------------------------
 # TAB 2 — Demographics
@@ -455,7 +499,7 @@ with tab_health:
             use_container_width=True, height=380,
         )
         csv = fdf.to_csv(index=False).encode("utf-8")
-        st.download_button("⬇️ Download filtered data (CSV)", data=csv, file_name="filtered_appointments.csv")
+        st.download_button("Download filtered data (CSV)", data=csv, file_name="filtered_appointments.csv")
 
 # --------------------------------------------------------------------------
 # TAB 5 — Prediction Model
@@ -528,7 +572,7 @@ with tab_model:
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
-    st.markdown("### 🔮 Try it: predict a single appointment")
+    st.markdown("### Predict a Single Appointment")
     st.caption("Fill in a hypothetical patient/appointment and get the model's no-show probability.")
 
     with st.form("predict_form"):
@@ -590,7 +634,7 @@ with tab_model:
         gauge.update_layout(height=320, margin=dict(t=50, l=20, r=20, b=10))
         st.plotly_chart(gauge, use_container_width=True)
         st.info(
-            "💡 This is an illustrative estimate from a statistical model trained on historical patterns — "
+            "This is an illustrative estimate from a statistical model trained on historical patterns, "
             "not a clinical or operational decision tool."
         )
 
