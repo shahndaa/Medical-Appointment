@@ -13,15 +13,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.inspection import permutation_importance
 from sklearn.metrics import (
-    RocCurveDisplay,
     average_precision_score,
     confusion_matrix,
     precision_recall_curve,
@@ -107,19 +106,17 @@ def get_data() -> pd.DataFrame:
 
 @st.cache_resource(show_spinner="Training the no-show prediction model...")
 def get_model(df: pd.DataFrame):
-    """Train (or load a pre-trained) HistGradientBoosting model.
+    """Train the HistGradientBoosting model.
 
-    If a pre-trained artifact exists under models/model.joblib (produced by
-    `python -m src.train_model`), we load it directly for a faster cold
-    start. Otherwise we train it here so the app also works standalone.
+    The model is trained live (it only takes ~1-2 seconds on this dataset)
+    and cached for the lifetime of the app process via st.cache_resource, so
+    it only actually runs once per deployment restart. We deliberately do
+    NOT ship a pre-pickled model artifact: pickle/joblib files are tied to
+    the exact Python + scikit-learn version that created them, and hosts
+    like Streamlit Community Cloud can run a different version than the one
+    used to build the artifact, which breaks unpickling. Training fresh
+    sidesteps that entire class of deployment bug.
     """
-    artifact_path = ROOT / "models" / "model.joblib"
-    if artifact_path.exists():
-        artifact = joblib.load(artifact_path)
-        model = artifact["model"]
-        train_df, test_df, cutoff = time_based_split(df, test_frac=0.2)
-        return model, train_df, test_df, cutoff, artifact.get("model_name", "Hist Gradient Boosting")
-
     train_df, test_df, cutoff = time_based_split(df, test_frac=0.2)
     model = HistGradientBoostingClassifier(
         max_iter=300, max_depth=8, learning_rate=0.08, l2_regularization=1.0,
@@ -127,6 +124,21 @@ def get_model(df: pd.DataFrame):
     )
     model.fit(train_df[MODEL_FEATURES], train_df["no_show_flag"])
     return model, train_df, test_df, cutoff, "Hist Gradient Boosting"
+
+
+@st.cache_data(show_spinner="Computing feature importance...")
+def get_feature_importance(_model, _X_test, _y_test):
+    """Permutation importance computed live against the held-out test set.
+
+    Cheap enough (a few seconds) to run once per session and cache, and it
+    avoids depending on any pre-computed artifact file.
+    """
+    result = permutation_importance(
+        _model, _X_test, _y_test, n_repeats=3, random_state=42, n_jobs=-1
+    )
+    return pd.DataFrame(
+        {"feature": MODEL_FEATURES, "importance": result.importances_mean}
+    ).sort_values("importance", ascending=False)
 
 
 df = get_data()
@@ -504,10 +516,7 @@ with tab_model:
         fig.update_layout(margin=dict(t=50, l=10, r=10, b=10), coloraxis_showscale=False)
         st.plotly_chart(fig, use_container_width=True)
     with col4:
-        try:
-            fi = pd.read_csv(ROOT / "models" / "feature_importance.csv")
-        except FileNotFoundError:
-            fi = pd.DataFrame({"feature": MODEL_FEATURES, "importance": model.feature_importances_ if hasattr(model, "feature_importances_") else np.zeros(len(MODEL_FEATURES))})
+        fi = get_feature_importance(model, X_test, y_test)
         fi = fi.sort_values("importance", ascending=True).tail(12)
         fig = px.bar(
             fi, x="importance", y="feature", orientation="h", template=CHART_TEMPLATE,
