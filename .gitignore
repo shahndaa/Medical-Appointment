@@ -6,3 +6,9 @@ venv/
 .ipynb_checkpoints/
 .DS_Store
 *.log
+
+# Model artifact is NOT committed: it's a pickle tied to the exact
+# Python/scikit-learn version that trained it, and the app trains its own
+# copy live at startup (see app.py: get_model). Keep regenerating it locally
+# via `python -m src.train_model` for inspection only.
+models/model.joblib
