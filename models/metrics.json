@@ -1,0 +1,65 @@
+{
+  "best_model": "Hist Gradient Boosting",
+  "cutoff_date": "2016-06-01",
+  "train_rows": 84076,
+  "test_rows": 26450,
+  "all_results": {
+    "Logistic Regression": {
+      "roc_auc": 0.6733548094450394,
+      "pr_auc": 0.2996516689863006,
+      "train_seconds": 0.14
+    },
+    "Random Forest": {
+      "roc_auc": 0.735106739565618,
+      "pr_auc": 0.3510288171345346,
+      "train_seconds": 14.03
+    },
+    "Hist Gradient Boosting": {
+      "roc_auc": 0.7374039811738027,
+      "pr_auc": 0.36037607961431567,
+      "train_seconds": 1.25
+    }
+  },
+  "best_model_full_metrics": {
+    "roc_auc": 0.7374039811738027,
+    "pr_auc": 0.36037607961431567,
+    "confusion_matrix": [
+      [
+        12442,
+        9126
+      ],
+      [
+        1080,
+        3802
+      ]
+    ],
+    "classification_report": {
+      "0": {
+        "precision": 0.9201301582606123,
+        "recall": 0.5768731454005934,
+        "f1-score": 0.7091479053861499,
+        "support": 21568.0
+      },
+      "1": {
+        "precision": 0.2940903465346535,
+        "recall": 0.7787791888570258,
+        "f1-score": 0.42695115103874226,
+        "support": 4882.0
+      },
+      "accuracy": 0.6141398865784499,
+      "macro avg": {
+        "precision": 0.6071102523976328,
+        "recall": 0.6778261671288096,
+        "f1-score": 0.568049528212446,
+        "support": 26450.0
+      },
+      "weighted avg": {
+        "precision": 0.8045790671133105,
+        "recall": 0.6141398865784499,
+        "f1-score": 0.6570615328067909,
+        "support": 26450.0
+      }
+    },
+    "train_seconds": 1.25
+  }
+}
