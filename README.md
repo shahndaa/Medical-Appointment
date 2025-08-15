@@ -3,6 +3,7 @@
 An end-to-end analytics and machine-learning project on 110,000+ real medical appointments from Brazil's public health system, delivered as an interactive Streamlit web application. The project combines an exploratory dashboard, a trained no-show prediction model with a full evaluation report, and a live risk calculator.
 
 **Live app:** [medical-appointment.streamlit.app](https://medical-appointment.streamlit.app/)
+**Repository:** [github.com/shahndaa/Medical-Appointment](https://github.com/shahndaa/Medical-Appointment)
 **Dataset:** [Medical Appointment No Shows, Kaggle](https://www.kaggle.com/datasets/joniarroba/noshowappointments)
 
 ---
@@ -50,7 +51,7 @@ Python, Streamlit, pandas, scikit-learn, Plotly, joblib
 ## Project structure
 
 ```
-medical-appointment-dashboard/
+Medical-Appointment/
 ├── app.py                      # Streamlit application (UI, charts, model tab)
 ├── src/
 │   ├── features.py             # Shared data cleaning and feature engineering
@@ -71,8 +72,8 @@ medical-appointment-dashboard/
 ## Run it locally
 
 ```bash
-git clone https://github.com/<your-username>/medical-appointment-dashboard.git
-cd medical-appointment-dashboard
+git clone https://github.com/shahndaa/Medical-Appointment.git
+cd Medical-Appointment
 pip install -r requirements.txt
 
 # optional: regenerate the model artifact from scratch
